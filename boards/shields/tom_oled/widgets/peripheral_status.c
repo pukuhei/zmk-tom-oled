@@ -85,7 +85,7 @@ static void update_labels(struct zmk_widget_peripheral_status *widget) {
     lv_label_set_text_fmt(widget->layer_label, "L%u", widget->layer);
 }
 
-static void refresh_widget(struct zmk_widget_peripheral_status *widget) {
+static void update_widget_state(struct zmk_widget_peripheral_status *widget) {
     if (widget->anim_timer != NULL) {
         lv_timer_set_period(widget->anim_timer,
                             widget->moving       ? TOM_OLED_ANIM_MOVING_MS
@@ -94,6 +94,10 @@ static void refresh_widget(struct zmk_widget_peripheral_status *widget) {
     }
 
     update_labels(widget);
+}
+
+static void refresh_widget(struct zmk_widget_peripheral_status *widget) {
+    update_widget_state(widget);
     draw_icon(widget);
 }
 
@@ -126,7 +130,7 @@ static void anim_timer_cb(lv_timer_t *timer) {
     }
 
     if (refresh) {
-        refresh_widget(widget);
+        update_widget_state(widget);
     }
 
     widget->frame++;
@@ -158,9 +162,12 @@ static void set_key_status(struct zmk_widget_peripheral_status *widget,
         return;
     }
 
+    bool was_typing = widget->typing;
     widget->typing = true;
     widget->typing_until = k_uptime_get() + TOM_OLED_TYPE_HOLD_MS;
-    refresh_widget(widget);
+    if (!was_typing) {
+        update_labels(widget);
+    }
 }
 
 static struct peripheral_key_state peripheral_key_get_state(const zmk_event_t *eh) {
