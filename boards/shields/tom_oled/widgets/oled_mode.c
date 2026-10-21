@@ -109,18 +109,18 @@ static void queue_mode_save(void) {}
 #endif
 
 void zmk_tom_oled_mode_toggle(void) {
-    /* Bongo Cat -> Agent status -> AI quota -> Bongo Cat. */
+    /* Bongo Cat -> AI quota -> Agent status -> Bongo Cat. */
     enum zmk_tom_oled_mode next;
     switch (zmk_tom_oled_mode_get()) {
     case ZMK_TOM_OLED_MODE_BONGO:
-        next = ZMK_TOM_OLED_MODE_AGENT;
-        break;
-    case ZMK_TOM_OLED_MODE_AGENT:
         next = ZMK_TOM_OLED_MODE_QUOTA;
         break;
     case ZMK_TOM_OLED_MODE_QUOTA:
+        next = ZMK_TOM_OLED_MODE_AGENT;
+        break;
+    case ZMK_TOM_OLED_MODE_AGENT:
     default:
-        next = bongo_widget != NULL ? ZMK_TOM_OLED_MODE_BONGO : ZMK_TOM_OLED_MODE_AGENT;
+        next = bongo_widget != NULL ? ZMK_TOM_OLED_MODE_BONGO : ZMK_TOM_OLED_MODE_QUOTA;
         break;
     }
     atomic_set(&current_mode, next);

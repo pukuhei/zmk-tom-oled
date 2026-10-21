@@ -5,7 +5,7 @@
 `central`側には、次の情報を表示します。
 
 - USB/Bluetoothの接続状態
-- WPM連動のBongo Cat、Codex/Claude Codeのタスク状態、AI利用枠の全画面表示（キー操作で切替）
+- WPM連動のBongo Cat、AI利用枠の全画面表示、Codex/Claude Codeのタスク状態（キー操作で切替）
 - 有効な修飾キー
 - 使用中のレイヤー
 - `central`および`peripheral`のバッテリー残量
@@ -87,7 +87,7 @@ CONFIG_ZMK_TOM_OLED_MAC_MODIFIERS=y
 中央OLEDのBongo Catと、CodexまたはClaude Codeのタスク状態（`WORK` / `WAIT` /
 `DONE` / `FAIL` / `OFF`）は、どちらもファームウェアに含まれます。keymapまたは
 DYA/ZMK Studioで、任意のキーへ`&oled_mode`（表示名: `OLED Mode Toggle`）を割り当てると、
-Bongo Cat → Agent status → AI利用枠 → Bongo Cat の順に切り替えられます。選択したモードは、Settingsが有効なファームウェアでは再起動後も保持
+Bongo Cat → AI利用枠 → Agent status → Bongo Cat の順に切り替えられます。選択したモードは、Settingsが有効なファームウェアでは再起動後も保持
 されます。
 
 この機能を含むファームウェアへ一度だけ更新すれば、その後は表示モードを変えるたびに
