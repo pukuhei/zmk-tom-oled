@@ -5,7 +5,7 @@
 `central`側には、次の情報を表示します。
 
 - USB/Bluetoothの接続状態
-- WPM連動のBongo Catと、Codex/Claude Codeのタスク状態（キー操作で切替）
+- WPM連動のBongo Cat、Codex/Claude Codeのタスク状態、AI利用枠の全画面表示（キー操作で切替）
 - 有効な修飾キー
 - 使用中のレイヤー
 - `central`および`peripheral`のバッテリー残量
@@ -86,8 +86,8 @@ CONFIG_ZMK_TOM_OLED_MAC_MODIFIERS=y
 
 中央OLEDのBongo Catと、CodexまたはClaude Codeのタスク状態（`WORK` / `WAIT` /
 `DONE` / `FAIL` / `OFF`）は、どちらもファームウェアに含まれます。keymapまたは
-DYA/ZMK Studioで、任意のキーへ`&oled_mode`（表示名: `OLED Mode Toggle`）を割り当てると
-切り替えられます。選択したモードは、Settingsが有効なファームウェアでは再起動後も保持
+DYA/ZMK Studioで、任意のキーへ`&oled_mode`（表示名: `OLED Mode Toggle`）を割り当てると、
+Bongo Cat → Agent status → AI利用枠 → Bongo Cat の順に切り替えられます。選択したモードは、Settingsが有効なファームウェアでは再起動後も保持
 されます。
 
 この機能を含むファームウェアへ一度だけ更新すれば、その後は表示モードを変えるたびに
@@ -137,6 +137,34 @@ Claude Codeはローカルのsession JSONLから状態を判定します。Hooks
 | `DONE` | タスクが完了 |
 | `FAIL` | タスクが失敗または中断 |
 | `OFF` | 監視対象なし、または状態の有効期限切れ |
+
+### AI利用枠（全画面）
+
+CodexまたはClaude Codeの**アカウント利用枠の残り%**を、128×32の全画面で表示します。
+金額、会話のコンテキスト長、残りトークン数ではありません。表示の意味はKYURENと同じです。
+
+| normal | low | zero | nodata | claude |
+| --- | --- | --- | --- | --- |
+| ![](assets/agent_quota/quota_normal.png) | ![](assets/agent_quota/quota_low.png) | ![](assets/agent_quota/quota_zero.png) | ![](assets/agent_quota/quota_nodata.png) | ![](assets/agent_quota/quota_claude.png) |
+
+- 上段: 対象AIと主枠（短い方の枠。例 `5H`）、右上に主枠の残り%
+- 中段: 10区画ゲージ。白い中身＝残量、輪郭＝使用済み
+- 下段: 副枠（例 `7D`）の残り%と、主枠のリセットまでの時間（`H:MM`、6000分以上は日数）
+- 未取得・取得失敗・期限切れは`--%`と`NO DATA`。0%とは区別し、ゲージを表示しません
+
+値はZMK Studio custom RPC `tom_oled__agent_quota`で受信します。リセットまでの時間は
+キーボード側でカウントダウンし、TTL（既定300秒）を過ぎるか枠のリセット時刻を過ぎると
+`NO DATA`へ戻ります。送信元は同梱のAgent OLED（0.3.0以降）です。
+
+```conf
+# 既定値
+CONFIG_ZMK_TOM_OLED_AGENT_QUOTA_STUDIO_RPC=y
+CONFIG_ZMK_TOM_OLED_AGENT_QUOTA_DEFAULT_TTL_SEC=300
+```
+
+描画は`widgets/agent_quota_render.c`（Zephyr非依存）にあり、
+`python3 tools/check_agent_quota_render.py`でホストコンパイルし、上の承認済み画像と
+1ピクセル単位で一致することを確認できます。
 
 ## Notes
 

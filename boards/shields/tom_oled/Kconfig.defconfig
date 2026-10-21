@@ -46,6 +46,27 @@ config ZMK_TOM_OLED_CODEX_STATUS_MAX_TTL_SEC
     range 1 65535
     depends on ZMK_TOM_OLED_CODEX_STATUS_STUDIO_RPC
 
+config ZMK_TOM_OLED_AGENT_QUOTA_STUDIO_RPC
+    bool "Receive AI quota through ZMK Studio custom RPC"
+    default y
+    depends on ZMK_STUDIO_RPC
+    depends on !ZMK_SPLIT || ZMK_SPLIT_ROLE_CENTRAL
+    help
+      Register the tom_oled__agent_quota custom subsystem used by the
+      full-screen AI quota mode.
+
+config ZMK_TOM_OLED_AGENT_QUOTA_DEFAULT_TTL_SEC
+    int "Default AI quota timeout in seconds"
+    default 300
+    range 1 65535
+    depends on ZMK_TOM_OLED_AGENT_QUOTA_STUDIO_RPC
+
+config ZMK_TOM_OLED_AGENT_QUOTA_MAX_TTL_SEC
+    int "Maximum AI quota timeout in seconds"
+    default 3600
+    range 1 65535
+    depends on ZMK_TOM_OLED_AGENT_QUOTA_STUDIO_RPC
+
 config ZMK_TOM_OLED_DONGLE_BATTERY
     bool "Show also the battery level of the dongle"
     depends on BT && (!ZMK_SPLIT_BLE || ZMK_SPLIT_ROLE_CENTRAL)

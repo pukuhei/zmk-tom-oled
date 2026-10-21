@@ -16,9 +16,13 @@ if(CONFIG_ZMK_DISPLAY AND CONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM)
         endif()
         zephyr_library_sources(widgets/codex_status.c)
         zephyr_library_sources(widgets/assets/codex_status_images.c)
+        zephyr_library_sources(widgets/agent_quota.c)
+        zephyr_library_sources(widgets/agent_quota_render.c)
         if(CONFIG_ZMK_TOM_OLED_CODEX_STATUS_STUDIO_RPC AND
            EXISTS "${CMAKE_SOURCE_DIR}/include/zmk/studio/custom.h")
             target_sources(app PRIVATE widgets/codex_status_rpc.c)
+            target_sources_ifdef(CONFIG_ZMK_TOM_OLED_AGENT_QUOTA_STUDIO_RPC app PRIVATE
+                                 widgets/agent_quota_rpc.c)
         elseif(CONFIG_ZMK_TOM_OLED_CODEX_STATUS_STUDIO_RPC)
             message(STATUS "tom_oled Agent status RPC disabled: ZMK custom RPC API unavailable")
         endif()

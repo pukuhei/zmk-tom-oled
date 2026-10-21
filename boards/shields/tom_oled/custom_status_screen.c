@@ -8,6 +8,7 @@
 #include <zephyr/sys/util.h>
 
 #if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
+#include "widgets/agent_quota.h"
 #include "widgets/battery_status.h"
 #include "widgets/codex_status.h"
 #include "widgets/modifiers.h"
@@ -47,6 +48,7 @@ static struct zmk_widget_hid_indicators hid_indicators_widget;
 static struct zmk_widget_bongo_cat bongo_cat_widget;
 #endif
 static struct zmk_widget_codex_status codex_status_widget;
+static struct zmk_widget_agent_quota agent_quota_widget;
 
 #if IS_ENABLED(CONFIG_ZMK_TOM_OLED_WPM)
 static struct zmk_widget_wpm_status wpm_status_widget;
@@ -89,12 +91,6 @@ lv_obj_t *zmk_display_status_screen() {
     zmk_widget_codex_status_init(&codex_status_widget, screen);
     lv_obj_align(zmk_widget_codex_status_obj(&codex_status_widget), LV_ALIGN_CENTER, -5, -3);
 
-#if IS_ENABLED(CONFIG_ZMK_TOM_OLED_BONGO_CAT)
-    zmk_tom_oled_mode_display_init(zmk_widget_bongo_cat_obj(&bongo_cat_widget),
-                                   zmk_widget_codex_status_obj(&codex_status_widget));
-#else
-    lv_obj_clear_flag(zmk_widget_codex_status_obj(&codex_status_widget), LV_OBJ_FLAG_HIDDEN);
-#endif
 
 #if IS_ENABLED(CONFIG_ZMK_TOM_OLED_MODIFIERS)
     zmk_widget_modifiers_init(&modifiers_widget, screen);
@@ -120,6 +116,18 @@ lv_obj_t *zmk_display_status_screen() {
     zmk_widget_dongle_battery_status_init(&dongle_battery_status_widget, screen);
     lv_obj_align(zmk_widget_dongle_battery_status_obj(&dongle_battery_status_widget), LV_ALIGN_TOP_RIGHT, 0, 0);
 #endif
+
+    /* Created last so the full-screen quota view sits above every status widget. */
+    zmk_widget_agent_quota_init(&agent_quota_widget, screen);
+    lv_obj_align(zmk_widget_agent_quota_obj(&agent_quota_widget), LV_ALIGN_TOP_LEFT, 0, 0);
+    zmk_tom_oled_mode_display_init(
+#if IS_ENABLED(CONFIG_ZMK_TOM_OLED_BONGO_CAT)
+        zmk_widget_bongo_cat_obj(&bongo_cat_widget),
+#else
+        NULL,
+#endif
+        zmk_widget_codex_status_obj(&codex_status_widget),
+        zmk_widget_agent_quota_obj(&agent_quota_widget));
 #else
     zmk_widget_peripheral_status_init(&peripheral_status_widget, screen);
     lv_obj_align(zmk_widget_peripheral_status_obj(&peripheral_status_widget), LV_ALIGN_TOP_LEFT, 0, 0);
