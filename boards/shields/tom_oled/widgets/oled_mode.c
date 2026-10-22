@@ -17,20 +17,37 @@ static atomic_t current_mode = ATOMIC_INIT(IS_ENABLED(CONFIG_ZMK_TOM_OLED_CODEX_
                                                : ZMK_TOM_OLED_MODE_BONGO);
 static lv_obj_t *bongo_widget;
 static lv_obj_t *agent_widget;
+static lv_obj_t *quota_widget;
+
+static void set_visible(lv_obj_t *obj, bool visible) {
+    if (obj == NULL) {
+        return;
+    }
+    if (visible) {
+        lv_obj_clear_flag(obj, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
+    }
+}
 
 static void apply_mode(struct k_work *work) {
     ARG_UNUSED(work);
 
-    if (bongo_widget == NULL || agent_widget == NULL) {
+    if (agent_widget == NULL || quota_widget == NULL) {
         return;
     }
 
-    if (zmk_tom_oled_mode_get() == ZMK_TOM_OLED_MODE_AGENT) {
-        lv_obj_add_flag(bongo_widget, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_clear_flag(agent_widget, LV_OBJ_FLAG_HIDDEN);
-    } else {
-        lv_obj_clear_flag(bongo_widget, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(agent_widget, LV_OBJ_FLAG_HIDDEN);
+    enum zmk_tom_oled_mode mode = zmk_tom_oled_mode_get();
+    if (mode == ZMK_TOM_OLED_MODE_BONGO && bongo_widget == NULL) {
+        mode = ZMK_TOM_OLED_MODE_AGENT;
+    }
+
+    set_visible(bongo_widget, mode == ZMK_TOM_OLED_MODE_BONGO);
+    set_visible(agent_widget, mode == ZMK_TOM_OLED_MODE_AGENT);
+    /* The quota screen is opaque and full size, so it hides the status widgets below it. */
+    set_visible(quota_widget, mode == ZMK_TOM_OLED_MODE_QUOTA);
+    if (mode == ZMK_TOM_OLED_MODE_QUOTA) {
+        lv_obj_move_foreground(quota_widget);
     }
 }
 
@@ -76,7 +93,7 @@ static int tom_oled_mode_settings_set(const char *name, size_t len, settings_rea
     if (rc < 0) {
         return rc;
     }
-    if (mode > ZMK_TOM_OLED_MODE_AGENT) {
+    if (mode > ZMK_TOM_OLED_MODE_QUOTA) {
         return -EINVAL;
     }
 
@@ -92,16 +109,28 @@ static void queue_mode_save(void) {}
 #endif
 
 void zmk_tom_oled_mode_toggle(void) {
-    enum zmk_tom_oled_mode next = zmk_tom_oled_mode_get() == ZMK_TOM_OLED_MODE_AGENT
-                                      ? ZMK_TOM_OLED_MODE_BONGO
-                                      : ZMK_TOM_OLED_MODE_AGENT;
+    /* Bongo Cat -> AI quota -> Agent status -> Bongo Cat. */
+    enum zmk_tom_oled_mode next;
+    switch (zmk_tom_oled_mode_get()) {
+    case ZMK_TOM_OLED_MODE_BONGO:
+        next = ZMK_TOM_OLED_MODE_QUOTA;
+        break;
+    case ZMK_TOM_OLED_MODE_QUOTA:
+        next = ZMK_TOM_OLED_MODE_AGENT;
+        break;
+    case ZMK_TOM_OLED_MODE_AGENT:
+    default:
+        next = bongo_widget != NULL ? ZMK_TOM_OLED_MODE_BONGO : ZMK_TOM_OLED_MODE_QUOTA;
+        break;
+    }
     atomic_set(&current_mode, next);
     queue_mode_apply();
     queue_mode_save();
 }
 
-void zmk_tom_oled_mode_display_init(lv_obj_t *bongo, lv_obj_t *agent) {
+void zmk_tom_oled_mode_display_init(lv_obj_t *bongo, lv_obj_t *agent, lv_obj_t *quota) {
     bongo_widget = bongo;
     agent_widget = agent;
+    quota_widget = quota;
     apply_mode(NULL);
 }
