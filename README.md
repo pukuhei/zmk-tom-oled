@@ -115,12 +115,17 @@ Claude Codeはローカルのsession JSONLから状態を判定します。Hooks
 `WAIT`は明示的な入力要求を検出した場合に表示され、一般的なツール権限ダイアログは
 `WORK`のままになることがあります。
 
-- [Agent OLED 0.2.0 for macOS（Apple Silicon）](apps/Agent-OLED-0.2.0-macOS-arm64.zip)
+- [Agent OLED 0.3.0 for macOS（Apple Silicon）](apps/Agent-OLED-0.3.0-macOS-arm64.zip)
 
 1. ZIPを展開し、`Agent OLED.app`を「アプリケーション」フォルダへ移動します。
 2. 初回起動時はControlキーを押しながらアプリをクリックし、「開く」を選択します。
 3. macOSから確認されたら、Bluetoothの使用を許可します。
 4. メニューバーからAgent OLEDを開き、監視するタスクとキーボードを選択します。
+5. AI利用枠を表示する場合は、パネルの「利用枠」で対象AI（Codex／Claude）を選びます。
+   Claudeの場合は「設定をコピー」を押し、コピーされた`statusLine`の設定で
+   `~/.claude/settings.json`の`statusLine`を置き換えます（アプリは設定ファイルを変更しません）。
+
+キーボードをUSBで接続している間は、ZMK Studioのシリアルポート経由でも送信します。
 
 対応環境はmacOS 14以降を搭載したApple Silicon Macです。Codex状態を受信するには、
 キーボード側で`CONFIG_ZMK_STUDIO=y`を有効にしてください。Bongo Cat表示のままでも
